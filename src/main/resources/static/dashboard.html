@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrackMyWallet — Personal Finance & Expense Tracker</title>
+  <meta name="description" content="Track your personal expenses, manage monthly budgets, and analyze spending habits with TrackMyWallet." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Dynamic background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-layout">
+
+    <!-- Mobile Navigation Toggle -->
+    <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu" onclick="toggleSidebar()">
+      ☰
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">💰</div>
+        <div>
+          <h1 class="brand-title">TrackMyWallet</h1>
+          <span class="brand-subtitle">Smart Finance Manager</span>
+        </div>
+      </div>
+
+      <div class="sidebar-cta">
+        <button class="btn-quick-add" id="quickAddExpenseBtn" onclick="openExpenseModal()">
+          <span class="plus-icon">+</span>
+          <span>Add Expense</span>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main Navigation">
+        <button class="nav-item active" id="navOverview" onclick="switchSection('overview')">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" id="navExpenses" onclick="switchSection('expenses')">
+          <span class="nav-icon">💳</span>
+          <span class="nav-label">Expenses</span>
+        </button>
+        <button class="nav-item" id="navBudgets" onclick="switchSection('budgets')">
+          <span class="nav-icon">🎯</span>
+          <span class="nav-label">Budgets</span>
+        </button>
+        <button class="nav-item" id="navCategories" onclick="switchSection('categories')">
+          <span class="nav-icon">🏷️</span>
+          <span class="nav-label">Categories</span>
+        </button>
+        <button class="nav-item" id="navReports" onclick="switchSection('reports')">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Reports & Analytics</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-details">
+          <div class="user-name" id="userFullName">Loading...</div>
+          <div class="user-handle" id="userUsername">@user</div>
+        </div>
+        <button class="btn-logout" id="logoutBtn" title="Log out" onclick="handleLogout()">
+          🚪
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+
+      <!-- Top Header Bar -->
+      <header class="app-header">
+        <div>
+          <h2 class="page-title" id="pageTitle">Dashboard Overview</h2>
+          <p class="page-subtitle" id="pageSubtitle">Track your financial pulse and monthly cash flow</p>
+        </div>
+        <div class="header-actions">
+          <div class="date-badge" id="currentPeriodBadge">
+            📅 October 2026
+          </div>
+          <button class="btn-primary" onclick="openExpenseModal()">
+            <span>+ New Expense</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ======================================================== -->
+      <!-- SECTION 1: DASHBOARD OVERVIEW -->
+      <!-- ======================================================== -->
+      <section class="content-section" id="sectionOverview">
+
+        <!-- Quick Summary Cards Grid -->
+        <div class="metrics-grid">
+          <!-- Card 1: Total Spent This Month -->
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Spent This Month</span>
+              <span class="metric-icon-badge color-purple">💸</span>
+            </div>
+            <div class="metric-value" id="cardMonthSpent">₹0.00</div>
+            <div class="metric-footer" id="cardMonthSpentFooter">
+              <span class="trend-neutral">Current Month</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Monthly Budget Status -->
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Monthly Budget</span>
+              <span class="metric-icon-badge color-indigo" id="budgetStatusIcon">🎯</span>
+            </div>
+            <div class="metric-value" id="cardBudgetValue">No budget set</div>
+            <div class="budget-progress-container">
+              <div class="budget-progress-bar">
+                <div class="budget-progress-fill" id="cardBudgetProgressFill" style="width: 0%;"></div>
+              </div>
+              <div class="budget-progress-labels">
+                <span id="cardBudgetPercent">0% used</span>
+                <span id="cardBudgetRemaining">Remaining: ₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Highest Expense -->
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Highest Expense</span>
+              <span class="metric-icon-badge color-amber">🔥</span>
+            </div>
+            <div class="metric-value" id="cardHighestExpense">₹0.00</div>
+            <div class="metric-footer" id="cardHighestExpenseFooter">
+              <span>No recorded expenses</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Total Recorded Transactions -->
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Total Transactions</span>
+              <span class="metric-icon-badge color-emerald">🧾</span>
+            </div>
+            <div class="metric-value" id="cardTotalTransactions">0</div>
+            <div class="metric-footer" id="cardTotalTransactionsFooter">
+              <span id="cardLifetimeTotal">Lifetime: ₹0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <!-- Trend Chart -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Monthly Spending Trend</h3>
+                <p class="chart-subtitle">Expense progression over recorded months</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="trendChartCanvas"></canvas>
+              <div class="chart-empty-state" id="trendChartEmpty" style="display:none;">
+                <p>No transaction history recorded yet.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Breakdown Chart -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Category Spending</h3>
+                <p class="chart-subtitle">Distribution of expenses this month</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="categoryChartCanvas"></canvas>
+              <div class="chart-empty-state" id="categoryChartEmpty" style="display:none;">
+                <p>No expenses recorded for this month.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions Panel -->
+        <div class="table-card glass-panel">
+          <div class="table-header">
+            <div>
+              <h3 class="table-title">Recent Transactions</h3>
+              <p class="table-subtitle">Your latest expense entries</p>
+            </div>
+            <button class="btn-text" onclick="switchSection('expenses')">View All →</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recentExpensesTbody">
+                <tr>
+                  <td colspan="5" class="table-loading">Loading recent transactions...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- SECTION 2: EXPENSES MANAGEMENT -->
+      <!-- ======================================================== -->
+      <section class="content-section" id="sectionExpenses" style="display:none;">
+
+        <!-- Filter and Search Bar -->
+        <div class="filter-bar glass-panel">
+          <div class="filter-group filter-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="expenseSearchInput" placeholder="Search description..." oninput="handleExpenseFilter()" />
+          </div>
+
+          <div class="filter-group">
+            <select id="expenseCategoryFilter" onchange="handleExpenseFilter()">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+
+          <div class="filter-group date-filter-group">
+            <label for="expenseStartDate">From</label>
+            <input type="date" id="expenseStartDate" onchange="handleExpenseFilter()" />
+          </div>
+
+          <div class="filter-group date-filter-group">
+            <label for="expenseEndDate">To</label>
+            <input type="date" id="expenseEndDate" onchange="handleExpenseFilter()" />
+          </div>
+
+          <button class="btn-secondary" onclick="resetExpenseFilters()">Reset</button>
+          <button class="btn-primary" onclick="openExpenseModal()">+ Add Expense</button>
+        </div>
+
+        <!-- Full Expenses Table -->
+        <div class="table-card glass-panel">
+          <div class="table-header">
+            <div>
+              <h3 class="table-title" id="expensesCountTitle">All Expenses</h3>
+              <p class="table-subtitle" id="expensesTotalSubtitle">Showing all recorded transactions</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableTbody">
+                <tr>
+                  <td colspan="5" class="table-loading">Loading expenses...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- SECTION 3: BUDGET MANAGEMENT -->
+      <!-- ======================================================== -->
+      <section class="content-section" id="sectionBudgets" style="display:none;">
+
+        <div class="budget-grid">
+          <!-- Active Month Budget Card -->
+          <div class="glass-panel budget-focus-card">
+            <div class="card-top">
+              <div>
+                <span class="badge-status" id="budgetMonthBadge">Current Month</span>
+                <h3 class="card-heading" id="budgetFocusMonthName">October 2026</h3>
+              </div>
+              <button class="btn-secondary btn-sm" onclick="openBudgetModal()">Set / Adjust Budget</button>
+            </div>
+
+            <div class="budget-details-row">
+              <div class="budget-stat-box">
+                <span class="stat-label">Budget Limit</span>
+                <span class="stat-val" id="budgetFocusLimit">₹0.00</span>
+              </div>
+              <div class="budget-stat-box">
+                <span class="stat-label">Total Spent</span>
+                <span class="stat-val" id="budgetFocusSpent">₹0.00</span>
+              </div>
+              <div class="budget-stat-box">
+                <span class="stat-label">Remaining Balance</span>
+                <span class="stat-val" id="budgetFocusRemaining">₹0.00</span>
+              </div>
+            </div>
+
+            <div class="budget-progress-container full-width">
+              <div class="budget-progress-bar tall">
+                <div class="budget-progress-fill" id="budgetFocusProgressFill" style="width: 0%;"></div>
+              </div>
+              <div class="budget-progress-labels">
+                <span id="budgetFocusPercentText">0% Used</span>
+                <span id="budgetFocusStatusAlert">No budget configured</span>
+              </div>
+            </div>
+
+            <!-- Quick Budget Presets -->
+            <div class="budget-presets-box">
+              <span class="presets-label">Quickly Set Budget for this Month:</span>
+              <div class="preset-buttons">
+                <button class="btn-chip" onclick="quickSetBudget(5000)">₹5,000</button>
+                <button class="btn-chip" onclick="quickSetBudget(10000)">₹10,000</button>
+                <button class="btn-chip" onclick="quickSetBudget(20000)">₹20,000</button>
+                <button class="btn-chip" onclick="quickSetBudget(35000)">₹35,000</button>
+                <button class="btn-chip" onclick="quickSetBudget(50000)">₹50,000</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- All Configured Budgets History Table -->
+          <div class="table-card glass-panel">
+            <div class="table-header">
+              <div>
+                <h3 class="table-title">Budget History</h3>
+                <p class="table-subtitle">All configured monthly budgets and their outcome</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Month & Year</th>
+                    <th>Budget Limit</th>
+                    <th>Actual Spent</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="budgetsTableTbody">
+                  <tr>
+                    <td colspan="6" class="table-loading">Loading budgets...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- SECTION 4: CATEGORY MANAGEMENT -->
+      <!-- ======================================================== -->
+      <section class="content-section" id="sectionCategories" style="display:none;">
+
+        <div class="section-toolbar">
+          <div>
+            <h3 class="section-title">Expense Categories</h3>
+            <p class="section-subtitle">Organize and personalize the spending buckets for your expenses</p>
+          </div>
+          <button class="btn-primary" onclick="openCategoryModal()">+ Add New Category</button>
+        </div>
+
+        <div class="category-grid" id="categoryCardsGrid">
+          <!-- Populated dynamically -->
+          <div class="card-loading">Loading categories...</div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- SECTION 5: REPORTS & ANALYTICS -->
+      <!-- ======================================================== -->
+      <section class="content-section" id="sectionReports" style="display:none;">
+
+        <!-- Reports Filter & Export Control -->
+        <div class="filter-bar glass-panel">
+          <div class="filter-group date-filter-group">
+            <label for="reportStartDate">Start Date</label>
+            <input type="date" id="reportStartDate" />
+          </div>
+
+          <div class="filter-group date-filter-group">
+            <label for="reportEndDate">End Date</label>
+            <input type="date" id="reportEndDate" />
+          </div>
+
+          <div class="filter-group">
+            <select id="reportCategoryFilter">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+
+          <button class="btn-secondary" onclick="setReportPeriod('thisMonth')">This Month</button>
+          <button class="btn-secondary" onclick="setReportPeriod('lastMonth')">Last Month</button>
+          <button class="btn-secondary" onclick="setReportPeriod('last90')">Last 90 Days</button>
+
+          <button class="btn-primary" onclick="loadReport()">Generate Report</button>
+          <button class="btn-accent" onclick="exportReportCsv()">📥 Export CSV</button>
+        </div>
+
+        <!-- Report KPI Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Period Total</span>
+              <span class="metric-icon-badge color-purple">📊</span>
+            </div>
+            <div class="metric-value" id="reportTotalSpent">₹0.00</div>
+            <div class="metric-footer" id="reportPeriodLabel">Selected range</div>
+          </div>
+
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Transactions</span>
+              <span class="metric-icon-badge color-indigo">🧾</span>
+            </div>
+            <div class="metric-value" id="reportTxnCount">0</div>
+            <div class="metric-footer">Total recorded</div>
+          </div>
+
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Daily Average</span>
+              <span class="metric-icon-badge color-amber">📅</span>
+            </div>
+            <div class="metric-value" id="reportDailyAvg">₹0.00</div>
+            <div class="metric-footer">Per day in period</div>
+          </div>
+
+          <div class="metric-card glass-panel">
+            <div class="metric-header">
+              <span class="metric-title">Highest In Period</span>
+              <span class="metric-icon-badge color-emerald">🔝</span>
+            </div>
+            <div class="metric-value" id="reportHighestExp">₹0.00</div>
+            <div class="metric-footer" id="reportHighestExpFooter">None</div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Bars & Table -->
+        <div class="charts-row">
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h3 class="chart-title">Period Category Breakdown</h3>
+              <p class="chart-subtitle">Spending distribution by category</p>
+            </div>
+            <div class="category-breakdown-list" id="reportCategoryBreakdownList">
+              <p class="table-loading">No report generated yet.</p>
+            </div>
+          </div>
+
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h3 class="chart-title">Visual Distribution</h3>
+              <p class="chart-subtitle">Category proportions</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="reportChartCanvas"></canvas>
+              <div class="chart-empty-state" id="reportChartEmpty" style="display:none;">
+                <p>No transactions in this period.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Expenses Table -->
+        <div class="table-card glass-panel">
+          <div class="table-header">
+            <div>
+              <h3 class="table-title">Period Transactions</h3>
+              <p class="table-subtitle">Itemized expense entries for the selected range</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="reportTableTbody">
+                <tr>
+                  <td colspan="4" class="table-loading">Click "Generate Report" to view items.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD / EDIT EXPENSE -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="expenseModal" style="display:none;" onclick="handleModalBackdropClick(event, 'expenseModal')">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title" id="expenseModalTitle">Add Expense</h3>
+        <button class="modal-close" onclick="closeModal('expenseModal')">✕</button>
+      </div>
+      <form id="expenseForm" onsubmit="saveExpense(event)">
+        <input type="hidden" id="expenseFormId" />
+
+        <div class="form-group">
+          <label for="expenseFormAmount">Amount (₹) *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">₹</span>
+            <input type="number" id="expenseFormAmount" step="0.01" min="0.01" placeholder="0.00" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="expenseFormCategory">Category *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🏷️</span>
+            <select id="expenseFormCategory" required>
+              <option value="">Select a category</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="expenseFormDate">Date *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📅</span>
+            <input type="date" id="expenseFormDate" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="expenseFormDescription">Description (Optional)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📝</span>
+            <input type="text" id="expenseFormDescription" maxlength="200" placeholder="e.g. Groceries at supermarket" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="saveExpenseBtn">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD / EDIT CATEGORY -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="categoryModal" style="display:none;" onclick="handleModalBackdropClick(event, 'categoryModal')">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title" id="categoryModalTitle">Add Category</h3>
+        <button class="modal-close" onclick="closeModal('categoryModal')">✕</button>
+      </div>
+      <form id="categoryForm" onsubmit="saveCategory(event)">
+        <input type="hidden" id="categoryFormId" />
+
+        <div class="form-group">
+          <label for="categoryFormName">Category Name *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🏷️</span>
+            <input type="text" id="categoryFormName" maxlength="50" placeholder="e.g. Fitness & Gym" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="categoryFormIcon">Icon Emoji</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🎨</span>
+            <input type="text" id="categoryFormIcon" maxlength="10" placeholder="e.g. 🏋️, ☕, 🎮" value="🏷️" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="categoryFormColor">Color</label>
+          <div class="color-picker-row">
+            <input type="color" id="categoryFormColor" value="#7c3aed" />
+            <span class="color-hint">Select a color identifier</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('categoryModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="saveCategoryBtn">Save Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: SET / EDIT BUDGET -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="budgetModal" style="display:none;" onclick="handleModalBackdropClick(event, 'budgetModal')">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title" id="budgetModalTitle">Monthly Budget Planner</h3>
+        <button class="modal-close" onclick="closeModal('budgetModal')">✕</button>
+      </div>
+      <form id="budgetForm" onsubmit="saveBudget(event)">
+        <input type="hidden" id="budgetFormId" />
+
+        <div class="form-group">
+          <label for="budgetFormYear">Year *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📅</span>
+            <input type="number" id="budgetFormYear" min="2000" max="2100" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="budgetFormMonth">Month *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🗓️</span>
+            <select id="budgetFormMonth" required>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="budgetFormAmount">Budget Amount (₹) *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">₹</span>
+            <input type="number" id="budgetFormAmount" step="0.01" min="0.01" placeholder="e.g. 15000" required />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('budgetModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="saveBudgetBtn">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: DELETE CONFIRMATION -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="deleteModal" style="display:none;" onclick="handleModalBackdropClick(event, 'deleteModal')">
+    <div class="modal-card glass-panel modal-card-sm">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Deletion</h3>
+        <button class="modal-close" onclick="closeModal('deleteModal')">✕</button>
+      </div>
+      <p class="modal-body-text" id="deleteModalMessage">Are you sure you want to delete this item? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+        <button type="button" class="btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

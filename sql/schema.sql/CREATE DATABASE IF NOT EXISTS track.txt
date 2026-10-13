@@ -1,0 +1,43 @@
+CREATE DATABASE IF NOT EXISTS trackmywallet;
+USE trackmywallet;
+
+-- 1. Users: one row per registered person
+CREATE TABLE IF NOT EXISTS users (
+    user_id       INT AUTO_INCREMENT PRIMARY KEY,
+    username      VARCHAR(50)  NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name     VARCHAR(100) NOT NULL,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Categories: each user has their own categories
+CREATE TABLE IF NOT EXISTS categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT NOT NULL,
+    name        VARCHAR(50) NOT NULL,
+    UNIQUE (user_id, name),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 3. Expenses: each expense belongs to a user and a category
+CREATE TABLE IF NOT EXISTS expenses (
+    expense_id   INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT NOT NULL,
+    category_id  INT NOT NULL,
+    amount       DECIMAL(10,2) NOT NULL CHECK (amount > 0),
+    description  VARCHAR(200),
+    expense_date DATE NOT NULL,
+    FOREIGN KEY (user_id)     REFERENCES users(user_id)           ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)  ON DELETE RESTRICT
+);
+
+-- 4. Budgets: one monthly budget per user per month
+CREATE TABLE IF NOT EXISTS budgets (
+    budget_id    INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT NOT NULL,
+    budget_year  INT NOT NULL,
+    budget_month INT NOT NULL CHECK (budget_month BETWEEN 1 AND 12),
+    amount       DECIMAL(10,2) NOT NULL CHECK (amount > 0),
+    UNIQUE (user_id, budget_year, budget_month),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
