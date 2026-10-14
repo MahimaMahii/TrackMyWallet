@@ -34,9 +34,10 @@ public class SessionInterceptor implements HandlerInterceptor {
         String path   = request.getRequestURI();
         String method = request.getMethod();
 
-        // Allow OPTIONS (preflight) and all /api/auth/* routes through without session check
+        // Allow OPTIONS (preflight), /api/auth/*, and /api/health routes through without session check
         if ("OPTIONS".equalsIgnoreCase(method)
                 || path.startsWith("/api/auth/")
+                || path.equals("/api/health")
                 || !path.startsWith("/api/")) {
             return true;
         }

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: trackmywallet
+    runtime: docker
+    region: singapore
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DDL_AUTO
+        value: update
+      - key: SHOW_SQL
+        value: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false

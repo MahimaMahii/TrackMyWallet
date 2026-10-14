@@ -3,7 +3,7 @@
 **Date:** October 13, 2026  
 **Project:** TrackMyWallet — Personal Expense Tracking & Budget Management Web Application  
 **Final Status:** 🟢 **ALL STAGES (1 to 8) COMPLETED & 100% VERIFIED**  
-**Automated Tests:** 15 / 15 Passed (0 Failures, 0 Errors, 0 Skipped)  
+**Automated Tests:** 16 / 16 Passed (0 Failures, 0 Errors, 0 Skipped)  
 
 ---
 
@@ -27,7 +27,8 @@ All stages from Stage 1 through Stage 8 have been implemented end-to-end, tested
 
 | Layer | Technology | Details |
 |---|---|---|
-| **Runtime & Language** | Java 17 / Java 21 | Modern LTS Java |
+| **Runtime (Local Dev)** | Java 17.0.12 (LTS) | Local JDK — compiles to Java 17 bytecode |
+| **Runtime (Docker / Render)** | Java 21 (Eclipse Temurin) | `eclipse-temurin:21-jdk-jammy` build image; `21-jre-jammy` production image |
 | **Backend Framework** | Spring Boot 4.1.1 | Spring MVC, Spring Data JPA |
 | **ORM & Persistence** | Hibernate 7 (7.4.5.Final) | Connection pool HikariCP |
 | **Database** | MySQL 8.0 | `localhost:3306`, database `trackmywallet` |
@@ -205,7 +206,7 @@ The user interface uses modern CSS glassmorphism, responsive flex/grid layouts, 
 
 The automated test suite runs with:
 ```powershell
-$env:DB_USER='root'; $env:DB_PASSWORD='Mahima@143'; .\mvnw.cmd test
+$env:DB_USER='root'; $env:DB_PASSWORD='<YOUR_DB_PASSWORD>'; .\mvnw.cmd test
 ```
 
 ### Test Suite Execution Summary:
@@ -228,7 +229,7 @@ $env:DB_USER='root'; $env:DB_PASSWORD='Mahima@143'; .\mvnw.cmd test
 - **`TrackMyWalletApplicationTests`** (1 test)
   - `contextLoads` ✅ Passed
 
-**Total:** **15 Tests Run, 0 Failures, 0 Errors, 0 Skipped (100% SUCCESS)**.
+**Total:** **16 Tests Run, 0 Failures, 0 Errors, 0 Skipped (100% SUCCESS)**.
 
 ---
 
@@ -238,9 +239,9 @@ $env:DB_USER='root'; $env:DB_PASSWORD='Mahima@143'; .\mvnw.cmd test
 Ensure MySQL 8.0 is running on `localhost:3306` with database `trackmywallet`. Set the credentials in PowerShell:
 ```powershell
 $env:DB_USER = "root"
-$env:DB_PASSWORD = "Mahima@143"
+$env:DB_PASSWORD = "<YOUR_DB_PASSWORD>"
 ```
-*(Note: `application.properties` is also configured with `Mahima@143` as the default fallback).*
+*(Note: Set the `DB_PASSWORD` environment variable before running.)*
 
 ### 2. Start the Server
 Navigate to the project root directory and start Spring Boot:

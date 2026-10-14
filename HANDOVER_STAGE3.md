@@ -72,7 +72,7 @@
 ### 1. Automated Test Suite (4/4 Passed)
 Run with:
 ```powershell
-$env:DB_USER='root'; $env:DB_PASSWORD='amrutha123@'; .\mvnw.cmd test
+$env:DB_USER='root'; $env:DB_PASSWORD='<YOUR_DB_PASSWORD>'; .\mvnw.cmd test
 ```
 Result:
 ```text
@@ -100,13 +100,13 @@ Result:
 Before running the app or tests, set the MySQL credentials in PowerShell:
 ```powershell
 $env:DB_USER = "root"
-$env:DB_PASSWORD = "amrutha123@"
+$env:DB_PASSWORD = "<YOUR_DB_PASSWORD>"
 ```
 
 ### Start Application Server
 ```powershell
 cd "c:\Users\AMRUTHA HARIKUMAR\OneDrive\Desktop\TrackMyWallet"
-$env:DB_USER='root'; $env:DB_PASSWORD='amrutha123@'
+$env:DB_USER='root'; $env:DB_PASSWORD='<YOUR_DB_PASSWORD>'
 .\mvnw.cmd spring-boot:run
 ```
 Once started, access:
